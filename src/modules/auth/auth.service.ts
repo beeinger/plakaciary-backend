@@ -8,10 +8,11 @@ import { JwtService } from "@nestjs/jwt";
 export class AuthService {
   constructor(private readonly jwtService: JwtService) {}
 
-  async generateJwt(
-    jwtPayload: JwtPayload
-  ): Promise<{ expiresIn: string | number; accessToken: string }> {
-    const accessToken = await this.jwtService.signAsync(jwtPayload);
+  async generateJwt({
+    email,
+    level,
+  }: JwtPayload): Promise<{ expiresIn: string | number; accessToken: string }> {
+    const accessToken = await this.jwtService.signAsync({ email, level });
     return {
       expiresIn: process.env.EXPIRES_IN,
       accessToken,
