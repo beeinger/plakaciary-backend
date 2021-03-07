@@ -18,13 +18,13 @@ export class Folder {
     type: [{ type: MongoSchema.Types.ObjectId, ref: "User" }],
     default: [],
   })
-  read: User[];
+  write: User[];
 
   @Prop({
     type: [{ type: MongoSchema.Types.ObjectId, ref: "User" }],
     default: [],
   })
-  write: User[];
+  read: User[];
 
   @Prop({
     type: [{ type: MongoSchema.Types.ObjectId, ref: "Folder" }],

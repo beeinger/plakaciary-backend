@@ -7,13 +7,14 @@ import {
   DefaultStatus,
   JwtPayload,
   LoginStatus,
+  UserPopulation,
 } from "src/shared/helpers";
-import { CreateUserDto } from "./dtos/create-user.dto";
-import { LoginUserDto } from "./dtos/login-user.dto";
-import { AuthService } from "../auth/auth.service";
+import { CreateUserDto } from "../dtos/create-user.dto";
+import { LoginUserDto } from "../dtos/login-user.dto";
+import { AuthService } from "../../auth/auth.service";
 import * as crypto from "crypto";
-import { FolderService } from "../folder/folder.service";
-import { AddFolderDto } from "../folder/dtos/add-folder.dto";
+import { FolderService } from "../../folder/folder.service";
+import { Role } from "src/enums/role.enum";
 
 @Injectable()
 export class UserService {
@@ -34,20 +35,26 @@ export class UserService {
   async login(
     loginUserDto: LoginUserDto
   ): Promise<LoginStatus | DefaultStatus> {
-    let users = await this.userModel.find({ email: loginUserDto.email }).exec();
+    let user = await this.userModel
+      .findOne({ email: loginUserDto.email, level: { $gte: Role.User } })
+      .exec();
+
     if (
-      !users.length ||
+      !user ||
       !(await this.authService.comparePasswords(
         loginUserDto.password,
-        users[0].password
+        user.password
       ))
     )
-      throw new HttpException("Invalid login details", HttpStatus.UNAUTHORIZED);
+      throw new HttpException(
+        "Invalid login details or user not confirmed",
+        HttpStatus.UNAUTHORIZED
+      );
 
-    const token = await this.authService.generateJwt(users[0]);
+    const token = await this.authService.generateJwt(user);
 
     return {
-      email: users[0].email,
+      email: user.email,
       ...token,
     };
   }
@@ -69,13 +76,12 @@ export class UserService {
   }
 
   async confirm(token: string): Promise<DefaultStatus> {
-    const users = await this.userModel.find({ token, level: -1 }).exec();
-    if (!users.length)
+    const user = await this.userModel.findOne({ token, level: -1 }).exec();
+    if (!user)
       return {
         error: true,
         message: "User email already confirmed or does not exist",
       };
-    const user = users[0];
     const newFolder = await this.folderService.create({
       name: "root",
       owner: user._id,
@@ -102,30 +108,12 @@ export class UserService {
     return { error: false };
   }
 
-  async addFolder(
-    user: User,
-    addFolderDto: AddFolderDto
-  ): Promise<DefaultStatus> {
-    console.log(user);
-    return { error: false };
-  }
-
   async findAll(): Promise<User[]> {
-    return await this.userModel
-      .find()
-      .populate({
-        path: "mainFolder",
-        select: {
-          __v: 0,
-          owner: 0,
-        },
-        populate: ["folders", "files", "write", "read"],
-      })
-      .exec();
+    return await this.userModel.find().populate(UserPopulation).exec();
   }
 
-  async findByEmail(email: string): Promise<User[]> {
-    return await this.userModel.find({ email }).exec();
+  async findByEmail(email: string): Promise<UserDocument> {
+    return await this.userModel.findOne({ email }).exec();
   }
 
   async delete(email: string): Promise<DefaultStatus> {
@@ -138,7 +126,7 @@ export class UserService {
   }
 
   async validate(payload: JwtPayload): Promise<User> {
-    const user = (await this.findByEmail(payload.email))[0];
+    const user = await this.findByEmail(payload.email);
     if (!user)
       throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
     return user;

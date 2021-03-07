@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { jsPDF } from "jspdf";
-import { parseCharToImagePath } from "utils";
+import { parseCharToImagePath } from "src/utils";
 import { readFileSync } from "fs";
 
 @Injectable()

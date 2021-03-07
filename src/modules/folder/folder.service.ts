@@ -14,4 +14,8 @@ export class FolderService {
     const newFolder = new this.folderModel(createFolderDto);
     return await newFolder.save();
   }
+
+  async findById(id: string): Promise<FolderDocument> {
+    return await this.folderModel.findById(id).exec();
+  }
 }
