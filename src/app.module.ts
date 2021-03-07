@@ -4,6 +4,7 @@ import { FileModule } from "./modules/file/file.module";
 import { FolderModule } from "./modules/folder/folder.module";
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
+import { PdfModule } from "./modules/pdf/pdf.module";
 import { UserModule } from "./modules/user/user.module";
 
 @Module({
@@ -17,6 +18,7 @@ import { UserModule } from "./modules/user/user.module";
     UserModule,
     FolderModule,
     FileModule,
+    PdfModule,
   ],
 })
 export class AppModule {}
