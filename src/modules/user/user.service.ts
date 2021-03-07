@@ -102,7 +102,11 @@ export class UserService {
     return { error: false };
   }
 
-  async addFolder(addFolderDto: AddFolderDto): Promise<DefaultStatus> {
+  async addFolder(
+    user: User,
+    addFolderDto: AddFolderDto
+  ): Promise<DefaultStatus> {
+    console.log(user);
     return { error: false };
   }
 

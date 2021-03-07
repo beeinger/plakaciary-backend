@@ -20,7 +20,9 @@ import { hasRoles } from "../auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Role } from "../../enums/role.enum";
-import { Folder } from "src/schemas/folder.schema";
+import { UserDocument } from "src/schemas/user.schema";
+import { AuthUser } from "../auth/decorators/user.decorator";
+import { AddFolderDto } from "../folder/dtos/add-folder.dto";
 
 @Controller("user")
 export class UserController {
@@ -85,6 +87,16 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   async delete(@Param("email") email: string): Promise<DefaultStatus> {
     return this.userService.delete(email);
+  }
+
+  @Post("folder")
+  @hasRoles(Role.User)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async addFolder(
+    @AuthUser() user: UserDocument,
+    @Body() addFolderDto: AddFolderDto
+  ): Promise<DefaultStatus> {
+    return this.userService.addFolder(user, addFolderDto);
   }
 
   // TODO
