@@ -1,6 +1,7 @@
-import { AuthModule } from "./modules/auth/auth.module";
 import { ConfigModule } from "@nestjs/config";
 import { ExampleModule } from "./modules/example/example.module";
+import { FileModule } from "./modules/file/file.module";
+import { FolderModule } from "./modules/folder/folder.module";
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { UserModule } from "./modules/user/user.module";
@@ -14,6 +15,8 @@ import { UserModule } from "./modules/user/user.module";
     }),
     ExampleModule,
     UserModule,
+    FolderModule,
+    FileModule,
   ],
 })
 export class AppModule {}

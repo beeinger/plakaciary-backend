@@ -16,10 +16,11 @@ import { DefaultStatus, LoginStatus } from "src/shared/helpers";
 import { MongoExceptionFilter } from "src/filters/mongo.exception";
 import { RegisterUserDto } from "./dtos/register-user.dto";
 import { LoginUserDto } from "./dtos/login-user.dto";
-import { hasRoles } from "../auth/guards/roles.decorator";
+import { hasRoles } from "../auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
-import { Role } from "../auth/guards/role.enum";
+import { Role } from "../../enums/role.enum";
+import { Folder } from "src/schemas/folder.schema";
 
 @Controller("user")
 export class UserController {
@@ -85,6 +86,7 @@ export class UserController {
   async delete(@Param("email") email: string): Promise<DefaultStatus> {
     return this.userService.delete(email);
   }
+
   // TODO
   // @Get("self")
   // @hasRoles(Role.Admin)

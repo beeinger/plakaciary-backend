@@ -9,8 +9,8 @@ import {
 
 import { JwtPayload } from "src/shared/helpers";
 import { PassportStrategy } from "@nestjs/passport";
-import { UserDto } from "../../user/dtos/user.dto";
 import { UserService } from "src/modules/user/user.service";
+import { User } from "src/schemas/user.schema";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -24,8 +24,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload): Promise<UserDto> {
-    const user = await this.userService.validate(payload);
+  async validate(jwtPayload: JwtPayload): Promise<User> {
+    const user = await this.userService.validate(jwtPayload);
     if (!user) {
       throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
     }

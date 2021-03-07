@@ -13,7 +13,7 @@ export class RegisterUserDto {
   @IsString()
   @MinLength(4)
   @MaxLength(20)
-  @Matches(/\w([0-9]+[a-z]|[a-z]+[0-9]|[A-Z]+[0-9])[a-zA-Z0-9]*/g, {
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[a-z]).*$/, {
     message: "Password is too weak",
   })
   password: string;

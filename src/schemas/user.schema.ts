@@ -1,11 +1,12 @@
+import { Document, Schema as MongoSchema } from "mongoose";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
-import { Document } from "mongoose";
-import { Role } from "src/modules/auth/guards/role.enum";
+import { Folder } from "./folder.schema";
+import { Role } from "src/enums/role.enum";
 
 export type UserDocument = User & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class User {
   @Prop({ required: true })
   password: string;
@@ -18,6 +19,9 @@ export class User {
 
   @Prop()
   token: string;
+
+  @Prop({ type: MongoSchema.Types.ObjectId, ref: "Folder" })
+  mainFolder: Folder;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

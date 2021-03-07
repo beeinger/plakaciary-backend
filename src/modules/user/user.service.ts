@@ -9,16 +9,18 @@ import {
   LoginStatus,
 } from "src/shared/helpers";
 import { CreateUserDto } from "./dtos/create-user.dto";
-import { UserDto } from "./dtos/user.dto";
 import { LoginUserDto } from "./dtos/login-user.dto";
 import { AuthService } from "../auth/auth.service";
 import * as crypto from "crypto";
+import { FolderService } from "../folder/folder.service";
+import { AddFolderDto } from "../folder/dtos/add-folder.dto";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly folderService: FolderService
   ) {}
 
   async register(createUserDto: CreateUserDto): Promise<User> {
@@ -67,16 +69,20 @@ export class UserService {
   }
 
   async confirm(token: string): Promise<DefaultStatus> {
-    const response = await this.userModel
-      .find({ token, level: -1 })
-      .update({ level: 0 })
-      .exec();
-
-    if (!response.nModified)
+    const users = await this.userModel.find({ token, level: -1 }).exec();
+    if (!users.length)
       return {
         error: true,
         message: "User email already confirmed or does not exist",
       };
+    const user = users[0];
+    const newFolder = await this.folderService.create({
+      name: "root",
+      owner: user._id,
+    });
+    user.level = 0;
+    user.mainFolder = newFolder._id;
+    user.save();
 
     return { error: false };
   }
@@ -96,8 +102,22 @@ export class UserService {
     return { error: false };
   }
 
+  async addFolder(addFolderDto: AddFolderDto): Promise<DefaultStatus> {
+    return { error: false };
+  }
+
   async findAll(): Promise<User[]> {
-    return await this.userModel.find().exec();
+    return await this.userModel
+      .find()
+      .populate({
+        path: "mainFolder",
+        select: {
+          __v: 0,
+          owner: 0,
+        },
+        populate: ["folders", "files", "write", "read"],
+      })
+      .exec();
   }
 
   async findByEmail(email: string): Promise<User[]> {
@@ -113,7 +133,7 @@ export class UserService {
     return { error: true, message: "User not found" };
   }
 
-  async validate(payload: JwtPayload): Promise<UserDto> {
+  async validate(payload: JwtPayload): Promise<User> {
     const user = (await this.findByEmail(payload.email))[0];
     if (!user)
       throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
