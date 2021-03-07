@@ -5,60 +5,99 @@ import {
   Get,
   Param,
   Post,
-  Query,
   UseFilters,
+  UseGuards,
 } from "@nestjs/common";
 
 import { UserService } from "./user.service";
-import { User } from "src/schemas/user.schema";
-import { CreateUserDto } from "./create-user.dto";
-import { MongoExceptionFilter } from "../../filters/mongo.exception";
+import { UserDto } from "./dtos/user.dto";
+import { toUserDto } from "src/shared/mapper";
+import { DefaultStatus, LoginStatus } from "src/shared/helpers";
+import { MongoExceptionFilter } from "src/filters/mongo.exception";
+import { RegisterUserDto } from "./dtos/register-user.dto";
+import { LoginUserDto } from "./dtos/login-user.dto";
+import { hasRoles } from "../auth/guards/roles.decorator";
+import { JwtAuthGuard } from "../auth/guards/jwt.guard";
+import { RolesGuard } from "../auth/guards/roles.guard";
+import { Role } from "../auth/guards/role.enum";
 
 @Controller("user")
 export class UserController {
-  constructor(private readonly appService: UserService) {}
+  constructor(private readonly userService: UserService) {}
 
-  @Post()
+  @Post("register")
   @UseFilters(
     new MongoExceptionFilter("User with the given email already exists")
   )
-  async create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.appService.create(createUserDto);
+  public async register(
+    @Body() registerUserDto: RegisterUserDto
+  ): Promise<UserDto> {
+    return toUserDto(await this.userService.register(registerUserDto));
   }
 
-  //! Admins only
-  @Get("all")
-  async findAll(): Promise<User[]> {
-    return this.appService.findAll();
+  @Post("login")
+  public async login(
+    @Body() loginUserDto: LoginUserDto
+  ): Promise<LoginStatus | DefaultStatus> {
+    return await this.userService.login(loginUserDto);
   }
 
-  //! Admins or the account owner only
-  @Delete(":email")
-  async delete(
+  @Get("authorize/:email")
+  @hasRoles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async authorize(@Param("email") email: string): Promise<DefaultStatus> {
+    return this.userService.authorize(email);
+  }
+
+  @Get("confirm/:token")
+  async confirm(@Param("token") token: string): Promise<DefaultStatus> {
+    return this.userService.confirm(token);
+  }
+
+  @Get("admin/:email")
+  @hasRoles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  public async makeAdmin(
     @Param("email") email: string
-  ): Promise<{ error: boolean; message?: string }> {
-    return this.appService.delete(email);
+  ): Promise<DefaultStatus> {
+    return await this.userService.makeAdmin(email);
+  }
+
+  @Get("all")
+  @hasRoles(Role.User)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async findAll(): Promise<UserDto[]> {
+    const users = await this.userService.findAll();
+    return users.map((user) => toUserDto(user));
   }
 
   @Get(":email")
-  async findByEmail(@Param("email") email: string): Promise<User[]> {
-    return this.appService.findByEmail(email);
+  @hasRoles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async findByEmail(@Param("email") email: string): Promise<UserDto[]> {
+    const users = await this.userService.findByEmail(email);
+    return users.map((user) => toUserDto(user));
   }
 
-  //! Admins only
-  @Get("authorize/:email")
-  async authorize(
-    @Param("email") email: string
-  ): Promise<{ error: boolean; message?: string }> {
-    return this.appService.authorize(email);
+  @Delete(":email")
+  @hasRoles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async delete(@Param("email") email: string): Promise<DefaultStatus> {
+    return this.userService.delete(email);
   }
+  // TODO
+  // @Get("self")
+  // @hasRoles(Role.Admin)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // async getSelf(@Param("email") email: string): Promise<UserDto[]> {
+  //   const users = await this.userService.findByEmail(email);
+  //   return users.map((user) => toUserDto(user));
+  // }
 
-  //! Account owner only
-  @Post("nick/:email")
-  async setNickname(
-    @Param("email") email: string,
-    @Query("nick") nickname: string
-  ): Promise<{ error: boolean; message?: string }> {
-    return this.appService.setNickname(email, nickname);
-  }
+  // @Delete("self")
+  // @hasRoles(Role.Admin)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // async delete(@Param("email") email: string): Promise<DefaultStatus> {
+  //   return this.userService.delete(email);
+  // }
 }
