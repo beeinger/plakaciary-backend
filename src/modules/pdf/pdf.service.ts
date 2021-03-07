@@ -14,8 +14,9 @@ export class PdfService {
       compress: true,
     });
     const characters = slogans.split("");
-    var i = 0;
+    let i = 0;
     for (const char of characters) {
+      console.log(char);
       if (char !== " ") {
         const _char = parseCharToImagePath(char);
         const image = readFileSync(`src/resources/alphabet/${_char}.png`);
