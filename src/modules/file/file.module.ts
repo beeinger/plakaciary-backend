@@ -9,6 +9,6 @@ import { MongooseModule } from "@nestjs/mongoose";
     MongooseModule.forFeature([{ name: File.name, schema: FileSchema }]),
   ],
   providers: [FileService],
-  exports: [MongooseModule],
+  exports: [MongooseModule, FileService],
 })
 export class FileModule {}

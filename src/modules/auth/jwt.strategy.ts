@@ -9,7 +9,7 @@ import {
 
 import { JwtPayload } from "src/shared/helpers";
 import { PassportStrategy } from "@nestjs/passport";
-import { UserService } from "src/modules/user/user.service";
+import { UserService } from "src/modules/user/services/user.service";
 import { User } from "src/schemas/user.schema";
 
 @Injectable()

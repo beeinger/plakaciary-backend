@@ -8,12 +8,11 @@ import {
   JwtPayload,
   LoginStatus,
 } from "src/shared/helpers";
-import { CreateUserDto } from "./dtos/create-user.dto";
-import { LoginUserDto } from "./dtos/login-user.dto";
-import { AuthService } from "../auth/auth.service";
+import { CreateUserDto } from "../dtos/create-user.dto";
+import { LoginUserDto } from "../dtos/login-user.dto";
+import { AuthService } from "../../auth/auth.service";
 import * as crypto from "crypto";
-import { FolderService } from "../folder/folder.service";
-import { AddFolderDto } from "../folder/dtos/add-folder.dto";
+import { FolderService } from "../../folder/folder.service";
 
 @Injectable()
 export class UserService {
@@ -34,7 +33,9 @@ export class UserService {
   async login(
     loginUserDto: LoginUserDto
   ): Promise<LoginStatus | DefaultStatus> {
-    let users = await this.userModel.find({ email: loginUserDto.email }).exec();
+    const users = await this.userModel
+      .find({ email: loginUserDto.email })
+      .exec();
     if (
       !users.length ||
       !(await this.authService.comparePasswords(
@@ -99,14 +100,6 @@ export class UserService {
         message: "User already is an admin or does not exist",
       };
 
-    return { error: false };
-  }
-
-  async addFolder(
-    user: User,
-    addFolderDto: AddFolderDto
-  ): Promise<DefaultStatus> {
-    console.log(user);
     return { error: false };
   }
 
