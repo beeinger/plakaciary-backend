@@ -12,4 +12,8 @@ export class FileService {
     const newFile = new this.fileModel(createFileDto);
     return await newFile.save();
   }
+
+  async deleteById(id: string): Promise<FileDocument> {
+    return await this.fileModel.findByIdAndDelete(id).exec();
+  }
 }
