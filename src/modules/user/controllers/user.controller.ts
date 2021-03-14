@@ -74,9 +74,9 @@ export class UserController {
   @Get(":email")
   @hasRoles(Role.Admin)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async findByEmail(@Param("email") email: string): Promise<UserDto[]> {
-    const users = await this.userService.findByEmail(email);
-    return users.map((user) => toUserDto(user));
+  async findByEmail(@Param("email") email: string): Promise<UserDto> {
+    const user = await this.userService.findByEmail(email);
+    return toUserDto(user);
   }
 
   @Delete(":email")

@@ -16,4 +16,8 @@ export class FileService {
   async deleteById(id: string): Promise<FileDocument> {
     return await this.fileModel.findByIdAndDelete(id).exec();
   }
+
+  async findById(id: string): Promise<FileDocument> {
+    return await this.fileModel.findById(id).exec();
+  }
 }

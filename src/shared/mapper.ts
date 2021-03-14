@@ -3,6 +3,6 @@ import { UserDto } from "src/modules/user/dtos/user.dto";
 
 export const toUserDto = (data: User): UserDto => {
   const { email, level, mainFolder, token } = data;
-  let userDto: UserDto = { email, level, mainFolder, token };
+  const userDto: UserDto = { email, level, mainFolder, token };
   return userDto;
 };

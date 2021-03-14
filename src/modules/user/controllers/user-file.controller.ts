@@ -10,6 +10,7 @@ import { AuthUser } from "../../auth/decorators/user.decorator";
 import { AddFileDto } from "../dtos/add-file.dto";
 import { UserFileService } from "../services/user-file.service";
 import { DelFileDto } from "../dtos/del-file.dto";
+import { GivePermFileDto } from "../dtos/givePerm-file.dto";
 
 @Controller("user/file")
 export class UserFileController {
@@ -30,5 +31,14 @@ export class UserFileController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   async delFile(@Body() delFileDto: DelFileDto): Promise<DefaultStatus> {
     return await this.userFileService.delFile(delFileDto);
+  }
+
+  @Post("give-permission")
+  @hasRoles(Role.User)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async givePermFile(
+    @Body() givePermFileDto: GivePermFileDto
+  ): Promise<DefaultStatus> {
+    return await this.userFileService.givePermFile(givePermFileDto);
   }
 }

@@ -117,8 +117,8 @@ export class UserService {
       .exec();
   }
 
-  async findByEmail(email: string): Promise<User[]> {
-    return await this.userModel.find({ email }).exec();
+  async findByEmail(email: string): Promise<User> {
+    return await this.userModel.findOne({ email: email }).exec();
   }
 
   async delete(email: string): Promise<DefaultStatus> {
@@ -131,7 +131,7 @@ export class UserService {
   }
 
   async validate(payload: JwtPayload): Promise<User> {
-    const user = (await this.findByEmail(payload.email))[0];
+    const user = await this.findByEmail(payload.email);
     if (!user)
       throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
     return user;
